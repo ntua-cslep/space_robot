@@ -1,0 +1,16 @@
+<launch>
+        <param name="robot_description" command="cat $(find space_robot)/model/servicer.xml" />
+        
+        <!--param name="tf_prefix" value="servicer" /-->
+        <!--param name="publish_frequency" value="10" /-->
+        <node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher" />
+
+        <!--param name="rate" value="10" /-->
+        <param name="use_gui" value="true" />
+        <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher"/>
+        <node name="odom_publisher" pkg="space_robot" type="odom_2_node" output="screen"/>
+        <!--include file="$(find space_robot)/launch/trackpoint_3mouse.launch"/-->
+        <!--node name="odom_publisher" pkg="space_robot" type="odom_node" output="screen"/-->
+
+        <node name="rviz" pkg="rviz" type="rviz" />
+</launch>

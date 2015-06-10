@@ -1,0 +1,27 @@
+<launch>
+  <arg name="r_mouse" default="/dev/input/mouse3" />
+  <arg name="l_mouse" default="/dev/input/mouse0" />
+  <arg name="f_mouse" default="/dev/input/mouse1" />
+  
+  
+	<node pkg="joy_mouse" type="mouse.py" name="trackpoint_joy_right" >
+    	<param name="dev" value="$(arg r_mouse)" />
+    	<param name="frame_id" value="right_mouse" />
+    	<!--param name="autorepeat_rate" value="0" /-->
+    	<!--param name="device_name" value="TPPS/2 IBM TrackPoint" /-->
+		<remap from="joy" to="right" />
+	</node>
+  
+	<node pkg="joy_mouse" type="mouse.py" name="trackpoint_joy_left" >
+		<param name="dev" value="$(arg l_mouse)" />
+		<param name="frame_id" value="left_mouse" />
+		<remap from="joy" to="left" />
+	 </node>
+	  
+	<node pkg="joy_mouse" type="mouse.py" name="trackpoint_joy_front" >
+		<param name="dev" value="$(arg f_mouse)" />
+		<param name="frame_id" value="front_mouse" />
+		<remap from="joy" to="front" />
+	</node>
+
+</launch>
