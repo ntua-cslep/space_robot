@@ -200,13 +200,13 @@ int main(int argc, char **argv)
         odom_trans.header.stamp = ros::Time::now();
         odom_broadcaster.sendTransform(odom_trans);
 
-        //drift emulation
+        /*drift emulation
         map_trans.header.stamp = ros::Time::now();//time_stamp[0];
         map_trans.transform.translation.x = (ros::Time::now()-start_time).toSec() *0.02;
         map_trans.transform.translation.y = (ros::Time::now()-start_time).toSec() *0.01;
         map_trans.transform.translation.z = 0;
         map_trans.transform.rotation = tf::createQuaternionMsgFromYaw(0);
-        map_broadcaster.sendTransform(map_trans); 
+        map_broadcaster.sendTransform(map_trans); */
       }
 
 

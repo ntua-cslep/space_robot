@@ -111,6 +111,7 @@ include_directories(${catkin_INCLUDE_DIRS})
 ## Declare a cpp executable
 add_executable(odom_node src/mouse_odom.cpp)
 add_executable(odom_2_node src/mouse_odom_2.cpp)
+add_executable(camera_odom src/camera_odom.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
@@ -121,6 +122,7 @@ add_dependencies(odom_2_node space_robot_generate_messages_cpp)
 ## Specify libraries to link a library or executable target against
 target_link_libraries(odom_node ${catkin_LIBRARIES})
 target_link_libraries(odom_2_node ${catkin_LIBRARIES})
+target_link_libraries(camera_odom ${catkin_LIBRARIES})
 
 #############
 ## Install ##
