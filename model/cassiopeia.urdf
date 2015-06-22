@@ -1,7 +1,6 @@
 <?xml version="1.0"?>
 <robot name="space_robot">
-  
-  
+   
   <link name="base_link">
     <visual>
       <geometry>
@@ -110,7 +109,7 @@
   <joint name="right_shoulder" type="revolute">
     <parent link="base_link"/>
     <child link="right_arm"/>
-    <origin xyz="0.15 0.1 0.1" rpy="0 0 0"/>
+    <origin xyz="0.15 -0.1 0.1" rpy="0 0 0"/>
     <axis xyz="0 0 1" /> 
     <limit effort="1" lower="-1.57" upper="2.57" velocity="0.5"/>
   </joint>
@@ -136,7 +135,7 @@
   <joint name="left_shoulder" type="revolute">
     <parent link="base_link"/>
     <child link="left_arm"/>
-    <origin xyz="0.15 -0.1 0.1" rpy="0 0 0"/>
+    <origin xyz="0.15 0.1 0.1" rpy="0 0 0"/>
     <axis xyz="0 0 1" />
     <limit effort="1" lower="-2.57" upper="1.57" velocity="0.5"/>
   </joint>

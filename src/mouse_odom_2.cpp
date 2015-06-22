@@ -51,7 +51,7 @@ public:
     this->ready = 0;
     if(read(this->fd, &this->ie, sizeof(struct input_event))!=-1)
     {
-      ROS_INFO("time %ld.%06ld\ttype %d\tcode %d\tvalue %d", ie.time.tv_sec, ie.time.tv_usec, ie.type, ie.code, ie.value);
+      //ROS_INFO("time %ld.%06ld\ttype %d\tcode %d\tvalue %d", ie.time.tv_sec, ie.time.tv_usec, ie.type, ie.code, ie.value);
       if (this->ie.type == EV_REL) //update x or y 
       {
         if (this->ie.code == REL_X)  this->dy = (float)(-this->ie.value);//its opposite and switched axes
@@ -63,7 +63,7 @@ public:
         this->data.header.stamp.nsec = (int)this->ie.time.tv_usec*1000;
         this->data.vector.y = this->dy;
         this->data.vector.x = this->dx;
-        ROS_INFO("Data ready: time %f X %f Y %f", this->data.header.stamp.toSec(), this->data.vector.x, data.vector.y);
+        //ROS_INFO("Data ready: time %f X %f Y %f", this->data.header.stamp.toSec(), this->data.vector.x, data.vector.y);
         //reset 
         this->dy=0.0;
         this->dx=0.0;
@@ -141,7 +141,7 @@ int main(int argc, char **argv)
     odom.pose.pose.position.x = 0.0;
     odom.pose.pose.position.y = 0.0;
     float th =0;
-    float scale = cpi/0.0254;
+    float scale = cpi/0.0254; //to cpm
 
     //////////////////////////////////////////////////
     //geometry_msgs::TransformStamped transform;
@@ -167,7 +167,7 @@ int main(int argc, char **argv)
         th += atan2((-data.vector.x + data2.vector.x), (0.121*scale));
         odom.pose.pose.position.x += (((data.vector.x + data2.vector.x)/2)*cos(th) + ((data.vector.y + data2.vector.y)/2)*sin(th))     /scale;
         odom.pose.pose.position.y += (((data.vector.x + data2.vector.x)/2)*sin(th) + ((data.vector.y + data2.vector.y)/2)*cos(th))     /scale;
-        ROS_INFO("odom: x %f y %f th %f", odom.pose.pose.position.x, odom.pose.pose.position.y, th);
+        //ROS_INFO("odom: x %f y %f th %f", odom.pose.pose.position.x, odom.pose.pose.position.y, th);
         geometry_msgs::Quaternion odom_quat;
         odom_quat = tf::createQuaternionMsgFromYaw(th);
         odom.pose.pose.orientation = odom_quat;
@@ -185,6 +185,7 @@ int main(int argc, char **argv)
       }   	
       else
       {
+        //send previous transform
         odom_trans.header.stamp = ros::Time::now();
         odom_broadcaster.sendTransform(odom_trans);
       }
