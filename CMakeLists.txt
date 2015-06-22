@@ -101,7 +101,8 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 # include_directories(include)
-include_directories(${catkin_INCLUDE_DIRS})
+include_directories(include ${catkin_INCLUDE_DIRS})
+include_directories(include src)
 
 ## Declare a cpp library
 # add_library(space_robot
@@ -112,17 +113,20 @@ include_directories(${catkin_INCLUDE_DIRS})
 add_executable(odom_node src/mouse_odom.cpp)
 add_executable(odom_2_node src/mouse_odom_2.cpp)
 add_executable(camera_odom src/camera_odom.cpp)
+add_executable(joint_state_publisher src/joint_state_publisher.cpp src/librtd-dm6814.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
-add_dependencies(odom_node space_robot_generate_messages_cpp)
-add_dependencies(odom_2_node space_robot_generate_messages_cpp)
+add_dependencies(odom_node             space_robot_generate_messages_cpp)
+add_dependencies(odom_2_node           space_robot_generate_messages_cpp)
+add_dependencies(joint_state_publisher space_robot_generate_messages_cpp)
 
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(odom_node ${catkin_LIBRARIES})
-target_link_libraries(odom_2_node ${catkin_LIBRARIES})
-target_link_libraries(camera_odom ${catkin_LIBRARIES})
+target_link_libraries(odom_node             ${catkin_LIBRARIES})
+target_link_libraries(odom_2_node           ${catkin_LIBRARIES})
+target_link_libraries(camera_odom           ${catkin_LIBRARIES})
+target_link_libraries(joint_state_publisher ${catkin_LIBRARIES})
 
 #############
 ## Install ##

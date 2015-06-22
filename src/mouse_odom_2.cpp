@@ -1,4 +1,4 @@
- #include <stdio.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <linux/input.h>
@@ -98,22 +98,6 @@ private:
   geometry_msgs::Vector3Stamped data;
 };
 
-nav_msgs::Odometry odometry(float scale, geometry_msgs::Vector3Stamped v1, geometry_msgs::Vector3Stamped v2, nav_msgs::Odometry& odom, float& th)
-{
-  geometry_msgs::Vector3 r1, r2;
-  r1.y = 0.0825;
-  r2.y = -0.0825;
-  
-  th += atan2((-v1.vector.x + v2.vector.x), (0.2*18867));
-  odom.pose.pose.position.x += (((v1.vector.x + v2.vector.x)/2)*cos(th) + ((v1.vector.y + v2.vector.y)/2)*sin(th))/scale;
-  odom.pose.pose.position.y += (((v1.vector.x + v2.vector.x)/2)*sin(th) + ((v1.vector.y + v2.vector.y)/2)*cos(th))/scale;
-  ROS_INFO("odom: x %f Y %f th %f", odom.pose.pose.position.x, odom.pose.pose.position.y, th);
-  geometry_msgs::Quaternion odom_quat;
-  odom_quat = tf::createQuaternionMsgFromYaw(th);
-  odom.pose.pose.orientation = odom_quat;
-  return odom;
-}
-
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "mouse_odom_node");
@@ -127,21 +111,12 @@ int main(int argc, char **argv)
     std::string frame[2];
     ros::param::param<std::string>("~left_frame_id", frame[L], "left_mouse");
     ros::param::param<std::string>("~right_frame_id", frame[R], "right_mouse");
-    float dpm;
-    ros::param::param<float>("~dots_per_meter", dpm, 18867);
+    float cpi;
+    ros::param::param<float>("~counts_per_meter", cpi, 800);
     //publishing odom
     ros::Publisher odom_pub = node.advertise<nav_msgs::Odometry>("odom", 1000);
+    
     //transformations
-    static tf2_ros::TransformBroadcaster map_broadcaster;
-    geometry_msgs::TransformStamped map_trans;
-    map_trans.header.frame_id = "map";
-    map_trans.child_frame_id = "odom";
-    map_trans.header.stamp = ros::Time::now();
-    map_trans.transform.translation.x = 0;
-    map_trans.transform.translation.y = 0;
-    map_trans.transform.translation.z = 0;
-    map_trans.transform.rotation = tf::createQuaternionMsgFromYaw(0);
-
     static tf2_ros::TransformBroadcaster odom_broadcaster;
     geometry_msgs::TransformStamped odom_trans;
     odom_trans.header.frame_id = "odom";
@@ -160,10 +135,13 @@ int main(int argc, char **argv)
     right_mouse.openDevice();
 
     geometry_msgs::Vector3Stamped data, data2;
-    nav_msgs::Odometry odometer;
-    odometer.pose.pose.position.x = 0.0;
-    odometer.pose.pose.position.y = 0.0;
-    float theta =0;
+    nav_msgs::Odometry odom;
+    odom.header.frame_id = "odom";
+    odom.child_frame_id = "base_link";
+    odom.pose.pose.position.x = 0.0;
+    odom.pose.pose.position.y = 0.0;
+    float th =0;
+    float scale = cpi/0.0254;
 
     //////////////////////////////////////////////////
     //geometry_msgs::TransformStamped transform;
@@ -185,31 +163,31 @@ int main(int argc, char **argv)
         data = left_mouse.getVector();
         data2 = right_mouse.getVector();
 
-        odom_pub.publish(odometry(dpm, data, data2, odometer, theta));
+        //calculation
+        th += atan2((-data.vector.x + data2.vector.x), (0.121*scale));
+        odom.pose.pose.position.x += (((data.vector.x + data2.vector.x)/2)*cos(th) + ((data.vector.y + data2.vector.y)/2)*sin(th))     /scale;
+        odom.pose.pose.position.y += (((data.vector.x + data2.vector.x)/2)*sin(th) + ((data.vector.y + data2.vector.y)/2)*cos(th))     /scale;
+        ROS_INFO("odom: x %f y %f th %f", odom.pose.pose.position.x, odom.pose.pose.position.y, th);
+        geometry_msgs::Quaternion odom_quat;
+        odom_quat = tf::createQuaternionMsgFromYaw(th);
+        odom.pose.pose.orientation = odom_quat;
+        
+        odom.header.stamp = ros::Time::now();//consideration
+        odom_pub.publish(odom);
         
 
         odom_trans.header.stamp = ros::Time::now();//time_stamp[0];
-        odom_trans.transform.translation.x = odometer.pose.pose.position.x;
-        odom_trans.transform.translation.y = odometer.pose.pose.position.x;
+        odom_trans.transform.translation.x = odom.pose.pose.position.x;
+        odom_trans.transform.translation.y = odom.pose.pose.position.y;
         odom_trans.transform.translation.z = 0.0;
-        odom_trans.transform.rotation = odometer.pose.pose.orientation;
+        odom_trans.transform.rotation = odom.pose.pose.orientation;
         odom_broadcaster.sendTransform(odom_trans);
       }   	
       else
       {
         odom_trans.header.stamp = ros::Time::now();
         odom_broadcaster.sendTransform(odom_trans);
-
-        /*drift emulation
-        map_trans.header.stamp = ros::Time::now();//time_stamp[0];
-        map_trans.transform.translation.x = (ros::Time::now()-start_time).toSec() *0.02;
-        map_trans.transform.translation.y = (ros::Time::now()-start_time).toSec() *0.01;
-        map_trans.transform.translation.z = 0;
-        map_trans.transform.rotation = tf::createQuaternionMsgFromYaw(0);
-        map_broadcaster.sendTransform(map_trans); */
       }
-
-
 
       ros::spinOnce();
       loop_rate.sleep();

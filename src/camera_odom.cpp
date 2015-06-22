@@ -38,8 +38,8 @@ int main(int argc, char **argv)
      */  
     ros::init(argc, argv, "udp_server");
     ros::NodeHandle nh;
-    ros::Publisher pub_odom = nh.advertise<nav_msgs::Odometry>("robot/odom", 1000);
-    ros::Rate loop_rate(50);
+    ros::Publisher pub_odom = nh.advertise<nav_msgs::Odometry>("camera/odom", 1000);
+    ros::Rate loop_rate(500);
     nav_msgs::Odometry odom;
     short x,y,th,u,v,w,t;
     int rob_id;
@@ -48,8 +48,8 @@ int main(int argc, char **argv)
     //map to odom transformation
     static tf2_ros::TransformBroadcaster map_broadcaster;
     geometry_msgs::TransformStamped map_trans;
-    map_trans.header.frame_id = "map";
-    map_trans.child_frame_id = "odom";
+    map_trans.header.frame_id = "odom";
+    map_trans.child_frame_id = "map";
     /*
      * UDP setup
      */
@@ -103,13 +103,11 @@ int main(int argc, char **argv)
                 memcpy(&w, &buf[12], 2);// thetaDot 10^-4 rad/sec
                 memcpy(&t, &buf[14], 2);// latency ms
 
-                odom.header.stamp = ros::Time::now();//as soon as possible minus the latency
-
-                odom.header.frame_id = "map";//reference franme for position
-                odom.child_frame_id  = "odom";//reference franme for velocity
-
             //Odometry broadcast
-
+                //header
+                odom.header.stamp = ros::Time::now();//as soon as possible minus the latency
+                odom.header.frame_id = "odom";//reference franme for position
+                odom.child_frame_id  = "map";//reference franme for velocity         
                 //set position
                 odom.pose.pose.position.x = (double)(x *0.0001);
                 odom.pose.pose.position.y = (double)(y *0.0001);
@@ -125,10 +123,9 @@ int main(int argc, char **argv)
             //transformation broadcast
                 ros::Duration delay((float)(t*0.001));
                 map_trans.header.stamp = ros::Time::now() - delay;
-                ROS_INFO("time: %d", t);
                 map_trans.transform.translation.x = (double)(x *0.0001);;
                 map_trans.transform.translation.y = (double)(y *0.0001);;
-                map_trans.transform.translation.z = 0.43;
+                map_trans.transform.translation.z = 0.0;
                 map_trans.transform.rotation = tf::createQuaternionMsgFromYaw((double)(th *0.0001));
                 map_broadcaster.sendTransform(map_trans);           
             }
@@ -143,7 +140,7 @@ int main(int argc, char **argv)
         ROS_INFO("Receivied data: Rob_ID: %d x %d, y %d, th %d, u %d, v %d, w %d, t %d\n" , buf[1], x, y, th, u, v, w, t);
 
         ros::spinOnce();
-        loop_rate.sleep();
+        loop_rate.sleep();//consider removing
     }
  
     close(s);

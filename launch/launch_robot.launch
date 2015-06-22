@@ -4,15 +4,13 @@
                 <!--param name="tf_prefix" value="servicer" /-->
                 <!--param name="publish_frequency" value="10" /-->
         </node>      
-        <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
+        <node name="joint_state_publisher" pkg="space_robot" type="joint_state_publisher" output="screen">
                 <!--param name="rate" value="10" /-->
                 <!--param name="use_gui" value="true" /-->
         </node>
         <node name="odom_publisher" pkg="space_robot" type="odom_2_node" output="screen">
-                <param name="left_dev_event" 
-                        value="/dev/input/by-path/pci-0000:00:1d.7-usb-0:3.1:1.0-event-mouse"/>
-                <param name="right_dev_event" 
-                        value="/dev/input/by-path/pci-0000:00:1d.7-usb-0:3.4:1.0-event-mouse"/>
+                <param name="left_dev_event" value="/dev/input/by-path/pci-0000:00:1d.7-usb-0:3.1:1.0-event-mouse"/>
+                <param name="right_dev_event" value="/dev/input/by-path/pci-0000:00:1d.7-usb-0:3.4:1.0-event-mouse"/>
         </node>
         <node name="camera_odom_publisher" pkg="space_robot" type="camera_odom">
                 <param name="robot_id" value="11" />
