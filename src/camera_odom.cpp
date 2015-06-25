@@ -35,9 +35,11 @@ void die(char *s)
  
 int main(int argc, char **argv)
 {
-    /*
-     * Ros initialize
-     */  
+
+    /********************************************************************************************
+     * ROS setup
+     ********************************************************************************************/
+
     ros::init(argc, argv, "udp_server");
     ros::NodeHandle nh;
     ros::Publisher pub_odom = nh.advertise<nav_msgs::Odometry>("camera/odom", 1000);
@@ -46,7 +48,7 @@ int main(int argc, char **argv)
     short x,y,th,u,v,w,t;
     int rob_id;
     ros::param::param<int>("~robot_id", rob_id, ROBOT_ID);
-    ROS_INFO("Reading odometry for Robot with ID: %d\n", rob_id);
+    ROS_INFO("Reading odometry for Robot with ID: %d", rob_id);
 
     //transforms
     tf::Transform map_to_base;
@@ -62,7 +64,7 @@ int main(int argc, char **argv)
 
     int port;
     ros::param::param<int>("~udp_port", port, DEFAULT_PORT);
-    ROS_INFO("listening to port: %d\n", port);
+    ROS_INFO("listening to port: %d", port);
 
     struct sockaddr_in si_me, si_other;
      
@@ -90,32 +92,36 @@ int main(int argc, char **argv)
     }
 
 
-    //keep listening for data
+    /********************************************************************************************
+     * THE LOOP
+     ********************************************************************************************/
+
+    //wait for the first odom to base transformation up to 2sec
+    try{
+        ROS_WARN("Camera node wait for first odom to base_link Transformation");
+        listener.waitForTransform("base_link", "odom", ros::Time::now(), ros::Duration(2.0));
+    }
+    catch (tf::TransformException ex){
+    ROS_ERROR("%s",ex.what());
+    ros::Duration(5.0).sleep();
+    }
+
+
     while(ros::ok())
     {
         /**********************************************************************************
                                   BLOCKING BLOCKING BLOCKING BLOCKING                         
-                                        receive camera data                               
+                                        wait to receive camera data                               
         ***********************************************************************************/
         if ((recv_len = recvfrom(s, &buf, BUFLEN, 0, (struct sockaddr *)&si_other, &slen)) == -1)
             ROS_WARN("Can't receive from UDP socket");
-        //recieved stamp
-        ros::Time stamp = ros::Time::now(); 
+
         /**********************************************************************************
                                   BLOCKING BLOCKING BLOCKING BLOCKING                         
-                                        receive camera data                               
+                                        just received camera data                               
         ***********************************************************************************/
-
-
-
-        //read odom trannformation
-        try{
-          listener.lookupTransform("base_link", "odom", ros::Time(0), base_to_odom);
-        }
-        catch (tf::TransformException ex){
-        ROS_ERROR("%s",ex.what());
-        ros::Duration(1.0).sleep();
-        }
+        
+        ros::Time data_stamp = ros::Time::now(); //we have to transmitt a time stamp from camera not the delay
         
 
         //message parser
@@ -131,11 +137,21 @@ int main(int argc, char **argv)
                 memcpy(&w, &buf[12], 2);// thetaDot 10^-4 rad/sec
                 memcpy(&t, &buf[14], 2);// latency ms
 
-                ros::Duration delay((float)(t*0.001));
+                ros::Duration data_delay( (double)t * 0.001 );
+                ros::Time camera_stamp = data_stamp - data_delay;
+        
+                //read odom trannformation at the time the foto is taken
+                try{
+                  listener.lookupTransform("base_link", "odom", camera_stamp, base_to_odom);
+                }
+                catch (tf::TransformException ex){
+                ROS_ERROR("%s",ex.what());
+                //ros::Duration(1.0).sleep();
+                }
 
             //Odometry broadcast
                 //header
-                odom.header.stamp = stamp - delay;//as soon as possible minus the latency
+                odom.header.stamp = camera_stamp;//as soon as possible minus the latency
                 odom.header.frame_id = "map";//reference franme for position
                 odom.child_frame_id  = "base_link";//reference franme for velocity         
                 //set position
@@ -149,27 +165,26 @@ int main(int argc, char **argv)
                 odom.twist.twist.linear.x = (double)(u *0.0001);
                 odom.twist.twist.linear.y = (double)(v *0.0001);
                 odom.twist.twist.angular.z= (double)(w *0.0001); 
-           
+                
+                pub_odom.publish(odom);
 
             //transformation broadcast
                 map_to_base.setOrigin(tf::Vector3((double)(x *0.0001), (double)(y *0.0001), 0.0));
                 tf::Quaternion q;
                 q.setRPY(0, 0, (double)(th *0.0001));
                 map_to_base.setRotation(q);
-
                 map_to_odom.mult(map_to_base, base_to_odom); 
-                broadcaster.sendTransform(tf::StampedTransform(map_to_odom, stamp - delay, "map", "odom"));
+
+                broadcaster.sendTransform(tf::StampedTransform(map_to_odom, camera_stamp, "map", "odom"));
 
             }
             else ROS_INFO("different Robot id recieved. ID: %d", (int)buf[1]);
         }
-
-        //
-        pub_odom.publish(odom);
+             
 
         //print details of the client/peer and the data received
-        ROS_INFO("Received packet from %s:%d\n", inet_ntoa(si_other.sin_addr), ntohs(si_other.sin_port));
-        ROS_INFO("Receivied data: Rob_ID: %d x %d, y %d, th %d, u %d, v %d, w %d, t %d\n" , buf[1], x, y, th, u, v, w, t);
+        //ROS_INFO("Received packet from %s:%d", inet_ntoa(si_other.sin_addr), ntohs(si_other.sin_port));
+        //ROS_INFO("Receivied data: Rob_ID: %d x:%d, y:%d, th:%d, u:%d, v:%d, w:%d, t:%d\n" , buf[1], x, y, th, u, v, w, t);
 
         ros::spinOnce();
         //loop_rate.sleep();//consider removing as we have a blocking call in the loop

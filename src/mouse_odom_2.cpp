@@ -118,14 +118,14 @@ int main(int argc, char **argv)
     
     //transformations
     static tf2_ros::TransformBroadcaster odom_broadcaster;
-    geometry_msgs::TransformStamped odom_trans;
-    odom_trans.header.frame_id = "odom";
-    odom_trans.child_frame_id = "base_link";
-    odom_trans.header.stamp = ros::Time::now();
-    odom_trans.transform.translation.x = 0;
-    odom_trans.transform.translation.y = 0;
-    odom_trans.transform.translation.z = 0;
-    odom_trans.transform.rotation = tf::createQuaternionMsgFromYaw(0);
+    geometry_msgs::TransformStamped odom_to_base;
+    odom_to_base.header.frame_id = "odom";
+    odom_to_base.child_frame_id = "base_link";
+    odom_to_base.header.stamp = ros::Time::now();
+    odom_to_base.transform.translation.x = 0;
+    odom_to_base.transform.translation.y = 0;
+    odom_to_base.transform.translation.z = 0;
+    odom_to_base.transform.rotation = tf::createQuaternionMsgFromYaw(0);
 
     ros::Time start_time = ros::Time::now();
     
@@ -143,17 +143,6 @@ int main(int argc, char **argv)
     float th =0;
     float scale = cpi/0.0254; //to cpm
 
-    //////////////////////////////////////////////////
-    //geometry_msgs::TransformStamped transform;
-    //tf2_ros::Buffer tfBuffer;
-    //tf2_ros::TransformListener tfListener(tfBuffer);
-    //try{
-    //  transform = tfBuffer.lookupTransform("base_link", "left_mouse", ros::Time(0));
-    //}
-    //catch (tf2::TransformException &ex) {
-    //  ROS_WARN("%s",ex.what());
-    //  //continue;
-    //}
 
     while(ros::ok())
     {
@@ -163,31 +152,43 @@ int main(int argc, char **argv)
         data = left_mouse.getVector();
         data2 = right_mouse.getVector();
 
-        //calculation
+
+        ros::Time data_stamp;
+        //Stamp data based on latest data from mouses
+        if (data2.header.stamp.toSec() > data.header.stamp.toSec())
+          data_stamp = data2.header.stamp;
+        else
+          data_stamp = data.header.stamp;
+
+        //ROS_INFO("mouse real data stamp %d.%d",       data_stamp.sec,       data_stamp.nsec);
+        //ROS_INFO(" ros::Time data stamp %d.%d", ros::Time::now().sec, ros::Time::now().nsec);
+
+      //calculation
+        odom.header.stamp = data_stamp;
         th += atan2((-data.vector.x + data2.vector.x), (0.121*scale));
         odom.pose.pose.position.x += (((data.vector.x + data2.vector.x)/2)*cos(th) + ((data.vector.y + data2.vector.y)/2)*sin(th))     /scale;
         odom.pose.pose.position.y += (((data.vector.x + data2.vector.x)/2)*sin(th) + ((data.vector.y + data2.vector.y)/2)*cos(th))     /scale;
-        //ROS_INFO("odom: x %f y %f th %f", odom.pose.pose.position.x, odom.pose.pose.position.y, th);
-        geometry_msgs::Quaternion odom_quat;
-        odom_quat = tf::createQuaternionMsgFromYaw(th);
+        geometry_msgs::Quaternion odom_quat = tf::createQuaternionMsgFromYaw(th);
         odom.pose.pose.orientation = odom_quat;
-        
-        odom.header.stamp = ros::Time::now();//consideration
+        //ROS_INFO("odom: x %f y %f th %f", odom.pose.pose.position.x, odom.pose.pose.position.y, th);
+    
         odom_pub.publish(odom);
         
 
-        odom_trans.header.stamp = ros::Time::now();//time_stamp[0];
-        odom_trans.transform.translation.x = odom.pose.pose.position.x;
-        odom_trans.transform.translation.y = odom.pose.pose.position.y;
-        odom_trans.transform.translation.z = 0.0;
-        odom_trans.transform.rotation = odom.pose.pose.orientation;
-        odom_broadcaster.sendTransform(odom_trans);
+        odom_to_base.header.stamp = data_stamp;
+        odom_to_base.transform.translation.x = odom.pose.pose.position.x;
+        odom_to_base.transform.translation.y = odom.pose.pose.position.y;
+        odom_to_base.transform.translation.z = 0.0;
+        odom_to_base.transform.rotation = odom.pose.pose.orientation;
+
+        odom_broadcaster.sendTransform(odom_to_base);
       }   	
       else
       {
-        //send previous transform
-        odom_trans.header.stamp = ros::Time::now();
-        odom_broadcaster.sendTransform(odom_trans);
+        //Keep posting transformation data in order to work with camera
+        //ROS_INFO("Time data stamp  %d.%d", ros::Time::now().sec, ros::Time::now().nsec);
+        odom_to_base.header.stamp = ros::Time::now();
+        odom_broadcaster.sendTransform(odom_to_base);
       }
 
       ros::spinOnce();
