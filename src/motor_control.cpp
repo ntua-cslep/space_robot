@@ -1,3 +1,16 @@
+/*
+**
+** Version 29 jun 15
+**
+** This file include a class for using the DAC module
+** All routines are for the DM6604HR DAC module by RTD
+** This class has been created based on DOS source code example from RTD site
+** Each DAC module (card) has eight DAC output channels (1-8) with a 12bit resolution each
+** The output voltage range is: [-5,+5]V, [-10,+10]V, [0,+10]V or [0,+5]V
+**
+** changes: unsigned int dac instead of unsigned char dac!
+*/
+
 #include <sys/io.h>
 #include "dm6604.h"
 
@@ -13,9 +26,7 @@ class DM6604{
 
   public:
   /***********
-  
    Constructor
-
   ***********/
   
   DM6604(unsigned base_address);
@@ -31,14 +42,12 @@ class DM6604{
     SetDACRange(20, BIPOLAR);
   }
   
-  /***********
-  
+  /*********** 
    Read DigitalIO
-  
+  ************
    The ReadDigitalIO function returns the value of the specified digital
    input port.  Each digital input line is represented by a bit of the
-   return value. Digital in 0 is bit 0, digital in 1 is bit 1, and so on.
-  
+   return value. Digital in 0 is bit 0, digital in 1 is bit 1, and so on. 
   ***********/
 
   unsigned char ReadDigitalIO(unsigned char InputPort)
@@ -46,15 +55,13 @@ class DM6604{
    return(inb(BaseAddress + PPI_A + InputPort));
   }
   
-  /***********
-  
+  /**************
    WriteDigitalIO
-  
+  ***************
    The WriteDigitalIO function sets the value of the digital output port to
    equal the value passed as parameter v.  Each digital output line is
    represented by a bit of v.  Digital out 0 is bit 0, digital out 1 is bit 1,
    and so on.
-  
   ***********/
   
   void WriteDigitalIO(unsigned char OutputPort, unsigned char v)
@@ -62,15 +69,13 @@ class DM6604{
    outb(v, BaseAddress + PPI_A + OutputPort);
   }
   
-  /*****************
-  
+  /****************
    ConfigureIOPorts
-  
+  *****************
    The ConfigureIOPorts procedure is used to configure the ports A and C on
    the 8255 PPI for either input or output.  A value of 1 means input, a value
    of 0 is for output.  It is advisable to use the INPUT and OUTPUT constants
    defined in this file.
-  
   *****************/
   
   void ConfigureIOPorts(unsigned char PortA, unsigned char PortB, unsigned char PortC)
@@ -80,15 +85,13 @@ class DM6604{
    outb(ControlByte, BaseAddress + PPI_CTRL);
   }
 
-  /*****************
-  
+  /********
   UpdateDAC
-  
+  *********
   The UpdateDAC function outputs the specified voltage to the specifed
   DAC.  The DACSlope and DACOffset variables must be set to the values
-  required for the output range of the DACs.
-  
-  *****************/
+  required for the output range of the DACs. 
+  ********/
 
   void UpdateDAC(unsigned char DAC, float Volts)
   {
@@ -99,9 +102,10 @@ class DM6604{
    outb(0           , BaseAddress + DAC_UPDATE);
   }
 
-  /*****************
-  
-   The SetDACRange procedure is used for calculating the constants for
+  /***********
+   SetDACRange
+  ************
+   This procedure is used for calculating the constants for
    converting between voltages and bits.  The range passed to this procedure
    is the difference between the high limit and the low limit of the DAC that
    was set using the on board jumpers.  A 0 to 5 volt DAC has a range of 5
@@ -109,9 +113,8 @@ class DM6604{
    a range of 10 volts, and a -10 to 10 volt DAC has a range of 20 volts.
    Polarity is also based on the selected DAC range.  Ranges of 0 to 5 volts
    or 0 to 10 volts are UNIPOLAR. Ranges of -5 to +5 volts or -10 to +10 volts
-   are BIPOLAR.
-  
-  *****************/
+   are BIPOLAR. 
+  ************/
   
   void SetDACRange(int Range, unsigned char Polarity)
   {
@@ -149,5 +152,8 @@ class DM6604{
     DACSlope = 4095.0 / ((HighmV - LowmV) / 1000);
   }
 
-
+ /***********
+ End of Class
+ ***********/
 }
+

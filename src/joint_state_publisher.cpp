@@ -10,7 +10,6 @@
 #include <stdlib.h>
 #include <dm6814_library.h>
 
-#define COUNTS 2048
 
 int main(int argc, char** argv) {
     ros::init(argc, argv, "joint_state_publisher");
@@ -18,7 +17,13 @@ int main(int argc, char** argv) {
     ros::Publisher joint_pub = n.advertise<sensor_msgs::JointState>("joint_states", 1);
     ros::Rate loop_rate(500);
 
+    //ROS PARAMETERS
+    float cpr;
+    ros::param::param<float>("~counts_per_revolution", cpr, 2048);
+    float gear_ratio;
+    ros::param::param<float>("~gear_ratio", gear_ratio, 55);
 
+    //ROS JOINT STATES
     sensor_msgs::JointState joint_state;
     joint_state.header.stamp = ros::Time::now();
     joint_state.name.resize(5);
@@ -34,25 +39,28 @@ int main(int argc, char** argv) {
     joint_state.name[4] ="wheel";
     joint_state.position[4] = 0;
 
+    //ENCODER CARD
     static DM6814Device dm6814_right;
     static DM6814Device dm6814_left;
 
-    uint16_t encoder_init_value = 0;
+    // TRY ACCESS CARDS
+    uint32_t right_minor_number = 0;
+    uint32_t  left_minor_number = 1;
 
-    // Encoder cards
-    uint32_t minor_number = 0;
-    uint32_t minor_number_2 = 1;
-    if (!dm6814_right.OpenBoard6814(minor_number)) 
+    if (!dm6814_right.OpenBoard6814(right_minor_number)) 
         ROS_ERROR("ERROR: OpenBoard6814() FAILED");
     if (!dm6814_right.InitBoard6814()) 
         ROS_ERROR("ERROR: InitBoard6814() FAILED");
 
-    if (!dm6814_left.OpenBoard6814(minor_number_2)) 
+    if (!dm6814_left.OpenBoard6814(left_minor_number)) 
         ROS_ERROR("ERROR: OpenBoard6814() FAILED");
     if (!dm6814_left.InitBoard6814()) 
         ROS_ERROR("ERROR: InitBoard6814() FAILED");
 
-    //second card init for left hand
+    // LOADING INITIAL VALUES 
+    uint16_t encoder_init_value = 0;
+  
+    //RIGHT
     for (int i=1; i<=3; i++)
     {
         // Disable the encoder
@@ -69,7 +77,8 @@ int main(int argc, char** argv) {
         if (! dm6814_right.EnableEncoder6814(i, true)) 
             ROS_ERROR("ERROR: EnableEncoder6814(%d, true) FAILED", i);
     }
-    //second card init for left hand
+    
+    //LEFT
     for (int i=1; i<=3; i++)
     {
         // Disable the encoder
@@ -87,7 +96,7 @@ int main(int argc, char** argv) {
             ROS_ERROR("ERROR: EnableEncoder6814(%d, true) FAILED", i);
     }
 
-    //encoder types
+    //ENCODER VALUES FROM CARD
     uint16_t encoder_1_val;
     uint16_t encoder_2_val;
     uint16_t encoder_3_val;
@@ -95,6 +104,7 @@ int main(int argc, char** argv) {
     uint16_t encoder_5_val;
     uint16_t encoder_6_val;
 
+    //ENCODER VALUES HISTORY FROM CARD
     uint16_t encoder_1_old = encoder_init_value;
     uint16_t encoder_2_old = encoder_init_value;
     uint16_t encoder_3_old = encoder_init_value;
@@ -102,13 +112,7 @@ int main(int argc, char** argv) {
     uint16_t encoder_5_old = encoder_init_value;
     uint16_t encoder_6_old = encoder_init_value;
 
-    int encoder_1 = encoder_init_value;
-    int encoder_2 = encoder_init_value;
-    int encoder_3 = encoder_init_value;
-    int encoder_4 = encoder_init_value;
-    int encoder_5 = encoder_init_value;
-    int encoder_6 = encoder_init_value;
-    
+    //ENCODER OVERFLOW COUNTERS
     int encoder_1_ovf = 0;
     int encoder_2_ovf = 0;
     int encoder_3_ovf = 0;
@@ -116,8 +120,18 @@ int main(int argc, char** argv) {
     int encoder_5_ovf = 0;
     int encoder_6_ovf = 0;
 
+    //ENCODER VALUES TO TRANSMIT
+    int encoder_1 = encoder_init_value;
+    int encoder_2 = encoder_init_value;
+    int encoder_3 = encoder_init_value;
+    int encoder_4 = encoder_init_value;
+    int encoder_5 = encoder_init_value;
+    int encoder_6 = encoder_init_value;
+    
+
     while (ros::ok()) 
     {
+
     //read robots joint state
         //right card
         if (! dm6814_right.ReadEncoder6814(1, &encoder_1_val))
@@ -128,6 +142,7 @@ int main(int argc, char** argv) {
 
         if (! dm6814_right.ReadEncoder6814(3, &encoder_3_val))
             ROS_ERROR("ERROR: ReadEncoder6814(3) FAILED");
+
         //left card
         if (! dm6814_left.ReadEncoder6814(1, &encoder_4_val))
             ROS_ERROR("ERROR: ReadEncoder6814(1) FAILED");
@@ -173,12 +188,12 @@ int main(int argc, char** argv) {
 
     //update joint_state
         joint_state.header.stamp = ros::Time::now();
-        joint_state.position[0] = (double)encoder_1/(55*COUNTS);
-        joint_state.position[1] =-(double)encoder_2/(55*COUNTS);
-        //joint_state.position[6] = (double)encoder_3_val;
-        joint_state.position[2] = (double)encoder_4/(55*COUNTS);
-        joint_state.position[3] = (double)encoder_5/(55*COUNTS);
-        joint_state.position[4] = (double)encoder_6/(55*COUNTS);
+        joint_state.position[0] = (double)encoder_1/(gear_ratio*cpr);
+        joint_state.position[1] =-(double)encoder_2/(gear_ratio*cpr);
+      //joint_state.position[5] = (double)encoder_3_val;
+        joint_state.position[2] = (double)encoder_4/(gear_ratio*cpr);
+        joint_state.position[3] = (double)encoder_5/(gear_ratio*cpr);
+        joint_state.position[4] = (double)encoder_6/(gear_ratio*cpr);
 
         //send the joint state and transform
         joint_pub.publish(joint_state);

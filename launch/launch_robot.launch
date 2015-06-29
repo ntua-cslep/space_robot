@@ -3,8 +3,11 @@
         <node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher">
                 <!--param name="tf_prefix" value="servicer" /-->
                 <!--param name="publish_frequency" value="10" /-->
-        </node>      
+        </node>   
+          
         <node name="joint_state_publisher" pkg="space_robot" type="joint_state_publisher" output="screen">
+                <param name="gear_ratio" value="55" />
+                <param name="counts_per_revolution" value="2048" />
         </node>
 
         <node name="camera_odom_publisher" pkg="space_robot" type="camera_odom" output="screen">

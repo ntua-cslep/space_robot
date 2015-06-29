@@ -114,6 +114,7 @@ add_executable(odom_node src/mouse_odom.cpp)
 add_executable(odom_2_node src/mouse_odom_2.cpp)
 add_executable(camera_odom src/camera_odom.cpp)
 add_executable(joint_state_publisher src/joint_state_publisher.cpp src/librtd-dm6814.cpp)
+add_executable(thruster_controller src/thruster_controller.cpp src/dm6604.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
@@ -127,6 +128,7 @@ target_link_libraries(odom_node             ${catkin_LIBRARIES})
 target_link_libraries(odom_2_node           ${catkin_LIBRARIES})
 target_link_libraries(camera_odom           ${catkin_LIBRARIES})
 target_link_libraries(joint_state_publisher ${catkin_LIBRARIES})
+target_link_libraries(thruster_controller   ${catkin_LIBRARIES})
 
 #############
 ## Install ##

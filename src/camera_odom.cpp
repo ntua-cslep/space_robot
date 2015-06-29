@@ -96,10 +96,10 @@ int main(int argc, char **argv)
      * THE LOOP
      ********************************************************************************************/
 
-    //wait for the first odom to base transformation up to 2sec
+    //wait for the first odom to base transformation up to 5sec
     try{
         ROS_WARN("Camera node wait for first odom to base_link Transformation");
-        listener.waitForTransform("base_link", "odom", ros::Time::now(), ros::Duration(2.0));
+        listener.waitForTransform("base_link", "odom", ros::Time::now(), ros::Duration(5.0));
     }
     catch (tf::TransformException ex){
     ROS_ERROR("%s",ex.what());
@@ -140,7 +140,7 @@ int main(int argc, char **argv)
                 ros::Duration data_delay( (double)t * 0.001 );
                 ros::Time camera_stamp = data_stamp - data_delay;
         
-                //read odom trannformation at the time the foto is taken
+                //read odom transformation at the time the foto is taken (past time)
                 try{
                   listener.lookupTransform("base_link", "odom", camera_stamp, base_to_odom);
                 }
@@ -152,8 +152,8 @@ int main(int argc, char **argv)
             //Odometry broadcast
                 //header
                 odom.header.stamp = camera_stamp;//as soon as possible minus the latency
-                odom.header.frame_id = "map";//reference franme for position
-                odom.child_frame_id  = "base_link";//reference franme for velocity         
+                odom.header.frame_id = "map";//reference frame for position
+                odom.child_frame_id  = "base_link";//reference frame for velocity         
                 //set position
                 odom.pose.pose.position.x = (double)(x *0.0001);
                 odom.pose.pose.position.y = (double)(y *0.0001);
