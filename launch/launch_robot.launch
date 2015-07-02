@@ -9,14 +9,19 @@
                 <param name="gear_ratio" value="55" />
                 <param name="counts_per_revolution" value="2048" />
         </node>
+        
+        <node name="odom_publisher" pkg="space_robot" type="odom_2_node" output="screen">
+                <param name="left_dev_event" value="/dev/input/by-path/pci-0000:00:1d.7-usb-0:3.1:1.0-event-mouse"/>
+                <param name="right_dev_event" value="/dev/input/by-path/pci-0000:00:1d.7-usb-0:3.4:1.0-event-mouse"/>
+        </node>
 
         <node name="camera_odom_publisher" pkg="space_robot" type="camera_odom" output="screen">
                 <param name="robot_id" value="11" />
                 <param name="udp_port" value="25000" />
         </node>
-        
-        <node name="odom_publisher" pkg="space_robot" type="odom_2_node" output="screen">
-                <param name="left_dev_event" value="/dev/input/by-path/pci-0000:00:1d.7-usb-0:3.1:1.0-event-mouse"/>
-                <param name="right_dev_event" value="/dev/input/by-path/pci-0000:00:1d.7-usb-0:3.4:1.0-event-mouse"/>
+
+        <node name="thrusters" pkg="space_robot" type="thruster_controller" output="screen">
+                <param name="frequency" value="20" />
+                <param name="resolution" value="100" />
         </node>
 </launch>

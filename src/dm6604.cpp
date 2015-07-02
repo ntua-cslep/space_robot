@@ -31,18 +31,49 @@ DM6604Device::DM6604Device(unsigned base_address)
 
 
 unsigned char 
-DM6604Device::readDigitalIO(unsigned char InputPort)
+DM6604Device::readDigitalPort(unsigned char InputPort)
 {
- return(inb(BaseAddress + PPI_A + InputPort));
+ return(inb(BaseAddress + InputPort));
 }
 
 
 void 
-DM6604Device::writeDigitalIO(unsigned char OutputPort, unsigned char v)
+DM6604Device::writeDigitalPort(unsigned char OutputPort, unsigned char v)
 {
- outb(v, BaseAddress + PPI_A + OutputPort);
+ outb(v, BaseAddress + OutputPort);
 }
 
+
+bool 
+DM6604Device::readDigitalPin(unsigned char InputPort, unsigned char pin)
+{
+  if((1<<pin) == (1<<pin) & inb(BaseAddress + InputPort) )
+    return(1);
+  else
+    return(0);
+}
+
+
+void 
+DM6604Device::setDigitalPin(unsigned char OutputPort, unsigned char pin)
+{
+  unsigned char status = inb(BaseAddress + OutputPort);
+
+  status |= 1<<pin;
+
+  outb(status, BaseAddress + OutputPort);
+}
+
+
+void 
+DM6604Device::clearDigitalPin(unsigned char OutputPort, unsigned char pin)
+{
+  unsigned char status = inb(BaseAddress + OutputPort);
+
+  status &= ~(1<<pin);
+  
+  outb(status, BaseAddress + OutputPort);
+}
 
 void 
 DM6604Device::configureIOPorts(unsigned char PortA, unsigned char PortB, unsigned char PortC)

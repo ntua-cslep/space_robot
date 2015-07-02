@@ -48,6 +48,12 @@
 #define UNIPOLAR 0
 #define BIPOLAR 1
 
+/***** Custom defines for Space robot******/
+#define PORTA  0
+#define PORTB  1
+#define PORTC  2
+
+
 
 class DM6604Device{
 	
@@ -74,7 +80,7 @@ class DM6604Device{
    return value. Digital in 0 is bit 0, digital in 1 is bit 1, and so on. 
   ***********/
 
-  unsigned char readDigitalIO(unsigned char InputPort);
+  unsigned char readDigitalPort(unsigned char InputPort);
 
   
   /**************
@@ -86,9 +92,17 @@ class DM6604Device{
    and so on.
   ***********/
   
-  void writeDigitalIO(unsigned char OutputPort, unsigned char v);
+  void writeDigitalPort(unsigned char OutputPort, unsigned char v);
 
-  
+
+
+
+  bool readDigitalPin(unsigned char InputPort, unsigned char pin);
+
+  void setDigitalPin(unsigned char OutputPort, unsigned char v);
+
+  void clearDigitalPin(unsigned char OutputPort, unsigned char v);
+
   /****************
    ConfigureIOPorts
   *****************
@@ -97,7 +111,7 @@ class DM6604Device{
    of 0 is for output.  It is advisable to use the INPUT and OUTPUT constants
    defined in this file.
   *****************/
-  
+
   void configureIOPorts(unsigned char PortA, unsigned char PortB, unsigned char PortC);
 
 
