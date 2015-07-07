@@ -1,14 +1,24 @@
 <launch>
-        <param name="robot_description" command="cat $(find space_robot)/model/cassiopeia.urdf" />      
+        <param name="robot_description" command="cat $(find space_robot)/model/cassiopeia.urdf" />   
+
+        <rosparam command="load" file="/home/ros/catkin_ws/src/space_robot/config/position_controllers.yaml"/>
+
+        <node name="hardware_interface" pkg="space_robot" type="space_robot_interface_node" output="screen">
+        </node>
+
+        <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false" output="screen" args="joint_state_publisher left_shoulder_controller right_shoulder_controller left_elbow_controller right_elbow_controller" >
+        </node>
+
+
         <node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher">
                 <!--param name="tf_prefix" value="servicer" /-->
                 <!--param name="publish_frequency" value="10" /-->
         </node>   
           
-        <node name="joint_state_publisher" pkg="space_robot" type="joint_state_publisher" output="screen">
+        <!--node name="joint_state_publisher" pkg="space_robot" type="joint_state_publisher" output="screen">
                 <param name="gear_ratio" value="55" />
                 <param name="counts_per_revolution" value="2048" />
-        </node>
+        </node-->
         
         <node name="odom_publisher" pkg="space_robot" type="odom_2_node" output="screen">
                 <param name="left_dev_event" value="/dev/input/by-path/pci-0000:00:1d.7-usb-0:3.1:1.0-event-mouse"/>
@@ -20,8 +30,8 @@
                 <param name="udp_port" value="25000" />
         </node>
 
-        <node name="thrusters" pkg="space_robot" type="thruster_controller" output="screen">
+        <!--node name="thrusters" pkg="space_robot" type="thruster_controller" output="screen">
                 <param name="frequency" value="20" />
                 <param name="resolution" value="100" />
-        </node>
+        </node-->
 </launch>

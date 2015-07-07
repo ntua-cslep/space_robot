@@ -4,7 +4,7 @@
 #include <sys/resource.h>
 #include "dm6604.h"
 
-DM6604Device dac(640); //0x280 
+DM6604Device dac; //0x280 
 int count=1;
 char port = 0;
 double duty[8];
@@ -32,6 +32,7 @@ int main(int argc, char** argv)
     ros::init(argc, argv, "thruster_controller");
     ros::NodeHandle n;
     ros::Rate loop_rate(1);
+    dac.init(640);
     dac.configureIOPorts(OUTPUT,OUTPUT,OUTPUT);
     dac.setDACRange(20, BIPOLAR);
 

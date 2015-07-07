@@ -9,13 +9,15 @@ find_package(catkin REQUIRED COMPONENTS
   nav_msgs
   geometry_msgs
   sensor_msgs
-  controller_manager
-  joy_mouse
   roscpp
   rospy
-  udp_server
   urdf
   tf
+  control_msgs
+  trajectory_msgs 
+  hardware_interface
+  controller_interface
+  controller_manager
 )
 
 ## System dependencies are found with CMake's conventions
@@ -88,10 +90,10 @@ find_package(catkin REQUIRED COMPONENTS
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES space_robot
-#  CATKIN_DEPENDS common_msgs controller joy_mouse ros_control roscpp rospy udp_server
-#  DEPENDS system_lib
+  INCLUDE_DIRS include
+  LIBRARIES space_robot
+  CATKIN_DEPENDS common_msgs ros_control roscpp rospy hardware_interface controller_manager
+  DEPENDS system_lib
 )
 
 ###########
@@ -100,13 +102,17 @@ catkin_package(
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
-# include_directories(include)
-include_directories(include ${catkin_INCLUDE_DIRS})
-include_directories(include src)
 
-## Declare a cpp library
-# add_library(space_robot
-#   src/${PROJECT_NAME}/space_robot.cpp
+include_directories(
+  include 
+  src 
+  ${catkin_INCLUDE_DIRS}
+)
+
+
+## Declare a cpp library<run_depend>hardware_interface</run_depend><run_depend>controller_interface</run_depend><run_depend>controller_manager</run_depend>
+# add_library(space_robot_hw_lib
+#  src/${PROJECT_NAME}/cassiopeia_hw.cpp
 # )
 
 ## Declare a cpp executable
@@ -115,13 +121,14 @@ add_executable(odom_2_node src/mouse_odom_2.cpp)
 add_executable(camera_odom src/camera_odom.cpp)
 add_executable(joint_state_publisher src/joint_state_publisher.cpp src/librtd-dm6814.cpp)
 add_executable(thruster_controller src/thruster_controller.cpp src/dm6604.cpp)
+add_executable(space_robot_interface_node src/space_robot_interface.cpp src/cassiopeia_hw.cpp src/dm6604.cpp src/librtd-dm6814.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
 add_dependencies(odom_node             space_robot_generate_messages_cpp)
 add_dependencies(odom_2_node           space_robot_generate_messages_cpp)
 add_dependencies(joint_state_publisher space_robot_generate_messages_cpp)
-
+add_dependencies(space_robot_interface_node   ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(odom_node             ${catkin_LIBRARIES})
@@ -129,6 +136,8 @@ target_link_libraries(odom_2_node           ${catkin_LIBRARIES})
 target_link_libraries(camera_odom           ${catkin_LIBRARIES})
 target_link_libraries(joint_state_publisher ${catkin_LIBRARIES})
 target_link_libraries(thruster_controller   ${catkin_LIBRARIES})
+target_link_libraries(space_robot_interface_node ${catkin_LIBRARIES})
+
 
 #############
 ## Install ##

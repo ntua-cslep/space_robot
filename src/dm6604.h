@@ -17,6 +17,8 @@
 	Copyright 2003 RTD Embedded Technologies
 
 ***************************************************************************/
+#ifndef dm6604_hpp___
+#define dm6604_hpp___
 
 #define PPI_A  0
 #define PPI_B  1
@@ -69,7 +71,7 @@ class DM6604Device{
    Constructor
   ***********/
   
-  DM6604Device(unsigned base_address);
+  void init(unsigned base_address);
 
   
   /*********** 
@@ -143,3 +145,5 @@ class DM6604Device{
   void setDACRange(int Range, unsigned char Polarity);
 
 };
+
+#endif

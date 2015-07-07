@@ -11,14 +11,14 @@
 **       [-5,+5]V, [-10,+10]V, [0,+10]V or [0,+5]V
 */
 
+#include <dm6604.h>
 #include <sys/io.h>
-#include "dm6604.h"
-
 #include <ros/ros.h>
 
 
 
-DM6604Device::DM6604Device(unsigned base_address)
+void 
+DM6604Device::init(unsigned base_address)
 {
   BaseAddress = base_address;
   //ConfigureIOPorts(INPUT, INPUT, OUTPUT);
