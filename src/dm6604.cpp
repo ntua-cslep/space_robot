@@ -87,11 +87,14 @@ DM6604Device::configureIOPorts(unsigned char PortA, unsigned char PortB, unsigne
 void 
 DM6604Device::updateDAC(unsigned char DAC, float Volts)
 {
- int Value;
- Value = (Volts * DACSlope) + DACOffset;
- outb(Value % 256 , BaseAddress + DAC1_LSB + (DAC - 1) * 2);
- outb(Value / 256 , BaseAddress + DAC1_MSB + (DAC - 1) * 2);
- outb(0           , BaseAddress + DAC_UPDATE);
+  if (Volts>(float)HighmV/1000) Volts = (float)HighmV/1000;
+  else if (Volts<(float)LowmV/1000) Volts = (float)LowmV/1000;
+
+  int Value;
+  Value = (Volts * DACSlope) + DACOffset;
+  outb(Value % 256 , BaseAddress + DAC1_LSB + (DAC - 1) * 2);
+  outb(Value / 256 , BaseAddress + DAC1_MSB + (DAC - 1) * 2);
+  outb(0           , BaseAddress + DAC_UPDATE);
 }
 
 

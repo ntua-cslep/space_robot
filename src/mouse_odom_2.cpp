@@ -11,6 +11,10 @@
 #include <geometry_msgs/TransformStamped.h>
 #include <nav_msgs/Odometry.h>
 #include <tf/transform_broadcaster.h>
+#include <tf/transform_listener.h>
+
+
+#include <kdl_parser/kdl_parser.hpp>
 
 #define L 0
 #define R 1
@@ -115,6 +119,46 @@ int main(int argc, char **argv)
     ros::param::param<float>("~counts_per_meter", cpi, 800);
     //publishing odom
     ros::Publisher odom_pub = node.advertise<nav_msgs::Odometry>("odom", 1000);
+
+
+    // //transforms
+    // tf::StampedTransform base_to_front_mouse;
+    // tf::StampedTransform base_to_left_mouse;
+
+    // tf::TransformListener f_listener, l_listener;
+    // ros::Duration(5.0).sleep();
+
+    // try{
+    //   f_listener.lookupTransform("base_link", "front_mouse", ros::Time(0), base_to_front_mouse);
+    // }
+    // catch (tf::TransformException ex){
+    //   ROS_ERROR("%s",ex.what());
+    //   ros::Duration(1.0).sleep();
+    // }
+
+    // try{
+    //   l_listener.lookupTransform("base_link", "left_mouse", ros::Time(0), base_to_left_mouse);
+    // }
+    // catch (tf::TransformException ex){
+    //   ROS_ERROR("%s",ex.what());
+    //   ros::Duration(1.0).sleep();
+    // }
+
+    // tf::Vector3 front_mouse_vector = base_to_front_mouse.getOrigin();
+    // tf::Vector3  left_mouse_vector = base_to_left_mouse.getOrigin();
+
+    // ROS_WARN("origin: x %d, y %d", (int)(front_mouse_vector.x()*100), (int)(front_mouse_vector.y()*100));
+    // ROS_WARN("origin: x %d, y %d", (int)(left_mouse_vector.x()*100), (int)(left_mouse_vector.y()*100));
+
+    // //KDL PARSER
+    // KDL::Tree my_tree;
+    // std::string robot_desc_string;
+    // ros::param::param<std::string>("robot_description", robot_desc_string, "string()");
+    // if (!kdl_parser::treeFromString(robot_desc_string, my_tree))
+    // {
+    //   ROS_ERROR("Failed to construct kdl tree");
+    //   return false;
+    // }
     
     //transformations
     static tf2_ros::TransformBroadcaster odom_broadcaster;
@@ -141,7 +185,7 @@ int main(int argc, char **argv)
     odom.pose.pose.position.x = 0.0;
     odom.pose.pose.position.y = 0.0;
     float th =0;
-    float scale = cpi/0.0254; //to cpm
+    float scale = cpi/0.0254; //multiply this with counts to take meters
 
 
     while(ros::ok())

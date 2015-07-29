@@ -1,0 +1,1 @@
+cmd_/home/ros/Desktop/DM6814_Linux_V02.02.00_Preliminary/driver/rtd-dm6814.ko := ld -r -m elf_i386 -T ./scripts/module-common.lds --build-id  -o /home/ros/Desktop/DM6814_Linux_V02.02.00_Preliminary/driver/rtd-dm6814.ko /home/ros/Desktop/DM6814_Linux_V02.02.00_Preliminary/driver/rtd-dm6814.o /home/ros/Desktop/DM6814_Linux_V02.02.00_Preliminary/driver/rtd-dm6814.mod.o

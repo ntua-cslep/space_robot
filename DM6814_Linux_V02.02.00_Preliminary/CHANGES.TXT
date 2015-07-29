@@ -1,0 +1,119 @@
+Change Log for SWP-700010036
+
+Linux Software (DM6814)
+
+Copyright (C), RTD Embedded Technologies, Inc. All Rights Reserved.
+
+
+v1.0 (rev A)	11/19/2004	MAS
+-----------------------------------
+- Initial version
+- Imported from RTD Finland
+- Documented for ISO9000
+
+
+
+v2.0.0 (rev B)	03/01/2005	RWB
+-----------------------------------
+- Combined the version 1.0 files dm6814drv.tar.gz, dm6814lib.tar.gz, and
+  dm6814samples.tar.gz into the single file dm6814_Linux_v2.0.0.tar.gz
+- Deleted all version 1.0 example programs
+- Imported DOS example programs and created new example and test programs
+
+- CHANGES.TXT changes:
+    * Documented changes in revision B
+
+- driver/rtd-dm6814.c changes:
+    * Modified driver to dynamically allocate a character device major number
+    * Removed the debug module parameter
+    * Removed the major module parameter
+    * Removed the force module parameter
+    * Removed support for sending signal to process when an interrupt occurs
+    * Removed ioctl() request code for returning interrupt count
+    * Implemented the read(2) system call to atomically return driver's
+      interrupt count and cached IRQ Status Register value and optionally wait
+      for an interrupt to occur
+    * Implemented the select(2)/poll(2) system call to allow a process to wait
+      inside kernel for an interrupt to occur without using signals
+    * Interrupt handler changes:
+	+ All interrupt status, not just P14 interrupts, is examined and all
+	  interrupts are now acknowledged by the driver
+	+ Handler now saves interrupt status register value whenever an
+	  interrupt occurs
+    * Reworked all ioctl() request processing code, including removing a lot of
+      unnecessary requests which could be implemented with a simple read or
+      write of I/O space
+    * Updated code to work with 2.6 kernels
+    * Changed names of device files
+    * Modified driver to allocate resources for all devices when kernel module
+      is loaded
+    * Driver now clears all interrupt status and disables all interrupts when
+      kernel module is loaded
+    * When a device file is opened, all interrupts are disabled
+    * Removed redundant flags structure member from DM6814 device descriptor;
+      the io member variable in the structure also indicates whether or not a
+      device has been initialized
+
+- lib/librtd-dm6814.cpp changes:
+    * Removed the following library functions which dealt with signals and
+      interrupt notification:
+	+ signal_handler()
+	+ InstallISR()
+	+ RemoveISR()
+    * Appended 6814 to the end of all function names except for class
+      constructors and destructors
+    * Fixed bug in GetDriverVersion6814() that caused function to return
+      without passing back driver version
+    * Updated all ioctl() calls to reflect kernel changes
+    * Removed the following obsolete public functions:
+	+ DoneTimer()
+	+ ClockDone()
+	+ GetIRQCounter()
+	+ EnableIRQ()
+	+ DisableBoardIRQ()
+	+ ClearIRQ()
+	+ SetIRQPolarity()
+	+ EnableIRQSharing()
+	+ GetIRQStatus()
+	+ ClearIrq()
+	+ DisableIncEnc()
+    * Created the following public functions:
+	+ EnableGetIntStatusWait6814()
+	+ GetIntStatus6814()
+	+ InitBoard6814()
+	+ LoadIRQRegister6814()
+	+ ReadByte6814()
+	+ WaitForInterrupt6814()
+	+ WriteByte6814()
+    * Reworked SetUserClock6814() so that it programs only a single
+      timer/counter instead of all three timers
+    * Updated OpenBoard6814() to use new device file names
+    * Added a second parameter to ReadTimerCounter6814() which passes back the
+      timer count so that the function return value is an error indication
+    * Added a fourth parameter to SetUserClock6814() which passes back the
+      actual frequency programmed so that the function return value is an error
+      indication
+    * Added second parameter to private function inb() which passes back the
+      value read from I/O space so that the function return value is an error
+      indication
+    * Removed private member variable IRQ_Register from DM6814Device class
+    * Created macros to set up value passed to LoadIRQRegister6814()
+    * Created macros to interpret status register value returned by
+      GetIntStatus6814()
+
+- README.TXT changes:
+    * Changed revision and version number of driver
+    * Reworked entire file to meet RTD Linux standards
+
+v2.1.0 (rev C)	04/30/2010	WJT
+-----------------------------------
+- driver/rtd-dm6814.c changes:
+    * Modified driver for 2.6 compatibility up to 2.6.33.x
+    * Fixed an issue with spin locks being held during functions that can sleep
+
+- Fixes for the following FOGBUGZ cases: 
+    *943, 961, 986
+    
+v2.2.0 (rev D)  04/17/2015      RGG
+-----------------------------------
+  * Modified driver for compatibility with kernel 3.8 and later

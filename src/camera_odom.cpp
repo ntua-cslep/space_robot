@@ -102,8 +102,8 @@ int main(int argc, char **argv)
         listener.waitForTransform("base_link", "odom", ros::Time::now(), ros::Duration(5.0));
     }
     catch (tf::TransformException ex){
-    ROS_ERROR("%s",ex.what());
-    ros::Duration(5.0).sleep();
+        ROS_ERROR("%s",ex.what());
+        ros::Duration(5.0).sleep();
     }
 
 

@@ -4,6 +4,7 @@
 #include <ros/ros.h>
 #include <dm6814_library.h>
 #include "cassiopeia_hw.h"
+#include <math.h>
 
 
 void CassiopeiaHW::writeMotors()
@@ -12,13 +13,14 @@ void CassiopeiaHW::writeMotors()
   dac.updateDAC(2,  cmd[1]);
   dac.updateDAC(3, -cmd[3]);
   dac.updateDAC(4, -cmd[4]);
-  dac.updateDAC(5, cmd[5]);
+  dac.updateDAC(5, -cmd[5]);
 
   eff[0] = cmd[0];
   eff[1] = cmd[1];
-  eff[2] = cmd[2];
+  // eff[2] = cmd[2];
   eff[3] = cmd[3];
   eff[4] = cmd[4];
+  eff[5] = cmd[5];
 }
 
 void CassiopeiaHW::readEncoders(ros::Duration dt)
@@ -83,9 +85,10 @@ void CassiopeiaHW::readEncoders(ros::Duration dt)
   
   pos[3]=  (double)encoder_4/(2048*55);
   pos[4]=  (double)encoder_5/(2048*55);
-  pos[5]=  (double)encoder_6/(2048*55);
+  pos[5]=  ((double)encoder_6*2.0)/4000;
+  ROS_DEBUG("encoder6: %d, pos (10^3): %d", encoder_6, (int)(pos[5]*1000));
   
-  for(int i=0; i<4; i++)
+  for(int i=0; i<6; i++)
   {
     vel[i]=(pos[i] - prev_pos[i])/dt.toSec();
     prev_pos[i] = pos[i];
@@ -104,7 +107,7 @@ CassiopeiaHW::CassiopeiaHW()
 
   hardware_interface::JointStateHandle state_handle_left_shoulder( "left_shoulder",  &pos[3], &vel[3], &eff[3]);
   hardware_interface::JointStateHandle state_handle_left_elbow(    "left_elbow",     &pos[4], &vel[4], &eff[4]);
-  hardware_interface::JointStateHandle state_handle_reaction_wheel("reaction_wheel", &pos[5], &vel[5], &eff[5]);
+  hardware_interface::JointStateHandle state_handle_reaction_wheel("reaction_wheel_joint", &pos[5], &vel[5], &eff[5]);
 
   jnt_state_interface.registerHandle(state_handle_left_shoulder);
   jnt_state_interface.registerHandle(state_handle_left_elbow);
@@ -120,7 +123,7 @@ CassiopeiaHW::CassiopeiaHW()
 
   hardware_interface::JointHandle effort_handle_left_shoulder( jnt_state_interface.getHandle("left_shoulder"), &cmd[3]);
   hardware_interface::JointHandle effort_handle_left_elbow(    jnt_state_interface.getHandle("left_elbow"),    &cmd[4]);
-  hardware_interface::JointHandle effort_handle_reaction_wheel(jnt_state_interface.getHandle("reaction_wheel"), &cmd[5]);
+  hardware_interface::JointHandle effort_handle_reaction_wheel(jnt_state_interface.getHandle("reaction_wheel_joint"), &cmd[5]);
 
   jnt_eff_interface.registerHandle(effort_handle_left_shoulder);
   jnt_eff_interface.registerHandle(effort_handle_left_elbow);
@@ -218,5 +221,9 @@ CassiopeiaHW::CassiopeiaHW()
   dac.init(640); //0x280 
   dac.configureIOPorts(OUTPUT,OUTPUT,OUTPUT);
   dac.setDACRange(20, BIPOLAR);
+  
+  for(int i=1; i<=8; i++) dac.updateDAC(i, 0.0);
+
+
 }
 

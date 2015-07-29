@@ -3,10 +3,13 @@
 
         <rosparam command="load" file="/home/ros/catkin_ws/src/space_robot/config/position_controllers.yaml"/>
 
+        <node name="encoder_card_drivers_loader" pkg="space_robot" type="DM6814_driver_load.sh" output="screen">
+        </node>       
+        
         <node name="hardware_interface" pkg="space_robot" type="space_robot_interface_node" output="screen">
         </node>
 
-        <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false" output="screen" args="joint_state_publisher left_shoulder_controller right_shoulder_controller left_elbow_controller right_elbow_controller" >
+        <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false" output="screen" args="joint_state_publisher left_shoulder_controller right_shoulder_controller left_elbow_controller right_elbow_controller reaction_wheel_position_controller" >
         </node>
 
 
@@ -30,8 +33,9 @@
                 <param name="udp_port" value="25000" />
         </node>
 
-        <!--node name="thrusters" pkg="space_robot" type="thruster_controller" output="screen">
-                <param name="frequency" value="20" />
+        <node name="thrusters" pkg="space_robot" type="thruster_controller" output="screen">
+                <param name="frequency" value="10" />
                 <param name="resolution" value="100" />
-        </node-->
+        </node>
+
 </launch>

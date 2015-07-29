@@ -18,6 +18,7 @@ find_package(catkin REQUIRED COMPONENTS
   hardware_interface
   controller_interface
   controller_manager
+  kdl_parser
 )
 
 ## System dependencies are found with CMake's conventions
@@ -92,7 +93,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES space_robot
-  CATKIN_DEPENDS common_msgs ros_control roscpp rospy hardware_interface controller_manager
+  CATKIN_DEPENDS common_msgs ros_control roscpp std_msgs rospy hardware_interface controller_manager
   DEPENDS system_lib
 )
 
@@ -129,6 +130,7 @@ add_dependencies(odom_node             space_robot_generate_messages_cpp)
 add_dependencies(odom_2_node           space_robot_generate_messages_cpp)
 add_dependencies(joint_state_publisher space_robot_generate_messages_cpp)
 add_dependencies(space_robot_interface_node   ${catkin_EXPORTED_TARGETS})
+add_dependencies(thruster_controller   space_robot_generate_messages_cpp)
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(odom_node             ${catkin_LIBRARIES})
