@@ -78,16 +78,21 @@ void CassiopeiaHW::readEncoders(ros::Duration dt)
   encoder_6_old = encoder_6_val;
   encoder_6 = (int)encoder_6_val + 65535*encoder_6_ovf;
 
+  ROS_DEBUG("1: %d, 2: %d, 3: %d, 4: %d, 5: %d, 6: %d", encoder_1, encoder_2, encoder_3, encoder_4, encoder_5, encoder_6);
 
-  pos[0]=  (double)encoder_1/(2048*55);
-  pos[1]= -(double)encoder_2/(2048*55);
-  pos[2]=  (double)encoder_3/(2048*55);//disconnected
+//Position Calculation
+  pos[0]=  (double)encoder_1*2*M_PI/(4096*190);
+  pos[1]= -(double)encoder_2*2*M_PI/(4096*190);
+  pos[2]=  (double)encoder_3*2*M_PI/(4096*190);//disconnected
   
-  pos[3]=  (double)encoder_4/(2048*55);
-  pos[4]=  (double)encoder_5/(2048*55);
-  pos[5]=  ((double)encoder_6*2.0)/4000;
+  pos[3]=  (double)encoder_4*2*M_PI/(4096*190);
+  pos[4]=  (double)encoder_5*2*M_PI/(4096*190);
+  pos[5]=  ((double)encoder_6*2.0)/4096;
   ROS_DEBUG("encoder6: %d, pos (10^3): %d", encoder_6, (int)(pos[5]*1000));
   
+  ROS_INFO("POS: 1: %f, 2: %f, 3: %f, 4: %f, 5: %f, 6: %f", pos[0], pos[1], pos[2], pos[3], pos[4], pos[5]);
+
+//Speed Calculation
   for(int i=0; i<6; i++)
   {
     vel[i]=(pos[i] - prev_pos[i])/dt.toSec();

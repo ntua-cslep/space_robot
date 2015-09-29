@@ -5,6 +5,7 @@
 #include <dm6604.h>
 #include <geometry_msgs/Twist.h>
 #include <geometry_msgs/WrenchStamped.h>
+#include <pthread.h>
 
 #define THRUST 0.87
 
@@ -21,6 +22,7 @@ geometry_msgs::WrenchStamped t12, t34, t56;
 
 void timerCallback(const ros::TimerEvent& event)
 {
+
     for(char i=0; i<8; i++)
     {
         if(count < duty[i]*(double)res) 
@@ -106,6 +108,13 @@ int main(int argc, char** argv)
     pub12 = n.advertise<geometry_msgs::WrenchStamped>("thruster12", 1000);
     pub34 = n.advertise<geometry_msgs::WrenchStamped>("thruster34", 1000);
     pub56 = n.advertise<geometry_msgs::WrenchStamped>("thruster56", 1000);
+
+    // Set thread's scheduling to realtime
+    struct sched_param param;
+    param.sched_priority = 98;
+    if (pthread_setschedparam(pthread_self(), SCHED_RR, &param) != 0) {
+        ROS_ERROR("Couldn't set thruster control to real-time");
+    }
 
     duty[0] = 0;
     duty[1] = 0;
