@@ -123,6 +123,7 @@ add_executable(camera_odom src/camera_odom.cpp)
 add_executable(joint_state_publisher src/joint_state_publisher.cpp src/librtd-dm6814.cpp)
 add_executable(thruster_controller src/thruster_controller.cpp src/dm6604.cpp)
 add_executable(space_robot_interface_node src/space_robot_interface.cpp src/cassiopeia_hw.cpp src/dm6604.cpp src/librtd-dm6814.cpp)
+add_executable(phase_space_node src/phase_space_node.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
@@ -139,6 +140,7 @@ target_link_libraries(camera_odom           ${catkin_LIBRARIES})
 target_link_libraries(joint_state_publisher ${catkin_LIBRARIES})
 target_link_libraries(thruster_controller   ${catkin_LIBRARIES})
 target_link_libraries(space_robot_interface_node ${catkin_LIBRARIES})
+target_link_libraries(phase_space_node      ${catkin_LIBRARIES})
 
 
 #############

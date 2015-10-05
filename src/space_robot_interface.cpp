@@ -17,6 +17,7 @@ int main(int argc, char** argv)
 
     ros::Time prev_time = ros::Time::now();
 
+
     while(ros::ok())
     {
         ros::Time curr_time = ros::Time::now();
@@ -24,8 +25,13 @@ int main(int argc, char** argv)
         prev_time = curr_time;
 
         robot.readEncoders(period);
+
+        if(robot.checkLimits())
+            ROS_WARN("limit switch pressed");
+
         cm.update(curr_time, period);
         robot.writeMotors();
+
 
         loop_rate.sleep();
     }

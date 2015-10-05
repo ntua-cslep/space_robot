@@ -118,7 +118,7 @@ int main(int argc, char **argv)
     float cpi;
     ros::param::param<float>("~counts_per_meter", cpi, 800);
     //publishing odom
-    ros::Publisher odom_pub = node.advertise<nav_msgs::Odometry>("odom", 1000);
+    ros::Publisher odom_pub = node.advertise<nav_msgs::Odometry>("mouse/odom", 1000);
 
 
     // //transforms
@@ -209,7 +209,7 @@ int main(int argc, char **argv)
 
       //calculation
         odom.header.stamp = data_stamp;
-        th += atan2((-data.vector.x + data2.vector.x), (0.121*scale));
+        th += atan2((-data.vector.x + data2.vector.x), (0.200*scale));
         odom.pose.pose.position.x += (((data.vector.x + data2.vector.x)/2)*cos(th) + ((data.vector.y + data2.vector.y)/2)*sin(th))     /scale;
         odom.pose.pose.position.y += (((data.vector.x + data2.vector.x)/2)*sin(th) + ((data.vector.y + data2.vector.y)/2)*cos(th))     /scale;
         geometry_msgs::Quaternion odom_quat = tf::createQuaternionMsgFromYaw(th);
@@ -229,8 +229,9 @@ int main(int argc, char **argv)
       }   	
       else
       {
-        //Keep posting transformation data in order to work with camera
-        //ROS_INFO("Time data stamp  %d.%d", ros::Time::now().sec, ros::Time::now().nsec);
+        // No odometry data broadcasting
+        // Keep posting transformation data in order to work with camera
+        // ROS_INFO("Time data stamp  %d.%d", ros::Time::now().sec, ros::Time::now().nsec);
         odom_to_base.header.stamp = ros::Time::now();
         odom_broadcaster.sendTransform(odom_to_base);
       }

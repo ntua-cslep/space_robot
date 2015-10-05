@@ -9,13 +9,14 @@ class CassiopeiaHW : public hardware_interface::RobotHW
 public:
   void writeMotors();
   void readEncoders(ros::Duration);
+  bool checkLimits();
   CassiopeiaHW(); 
 
 private:
   hardware_interface::JointStateInterface jnt_state_interface;
   hardware_interface::EffortJointInterface jnt_eff_interface;
   double cmd[6];
-  double pos[6], prev_pos[6];
+  double pos[6], prev_pos[6], offset_pos[6];
   double vel[6];
   double eff[6];
 

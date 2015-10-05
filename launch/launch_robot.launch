@@ -28,6 +28,8 @@
                 <param name="right_dev_event" value="/dev/input/by-path/pci-0000:00:1d.7-usb-0:3.4:1.0-event-mouse"/>
         </node>
 
+        <!--node name="phase_space" pkg="space_robot" type="phase_space_node" output="screen">
+        </node-->
         <node name="camera_odom_publisher" pkg="space_robot" type="camera_odom" output="screen">
                 <param name="robot_id" value="11" />
                 <param name="udp_port" value="25000" />
